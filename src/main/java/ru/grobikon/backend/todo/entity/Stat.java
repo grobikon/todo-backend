@@ -36,7 +36,7 @@ public class Stat { // в этой таблице всего 1 запись, к�
     @Column(name = "uncompleted_total", updatable = false)
     private Long uncompletedTotal; // значение задается в триггере в БД
 
-    @OneToOne
+    @OneToOne(fetch = FetchType.LAZY)
     @MapsId
     @JoinColumn(name = "user_id", referencedColumnName = "id") // по каким полям связывать (foreign key)
     private User user;
