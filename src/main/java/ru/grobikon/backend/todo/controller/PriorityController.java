@@ -28,38 +28,38 @@ public class PriorityController {
     }
 
     @PostMapping("/add")
-    public ResponseEntity<Priority> add(@RequestBody Priority category) {
+    public ResponseEntity<Priority> add(@RequestBody Priority priority) {
 
         // проверка на обязательные параметры
-        if (category.getId() != null && category.getId() != 0) {
+        if (priority.getId() != null && priority.getId() != 0) {
             // id создаётся автоматически в БД (autoincrement), поэтому его передавать не нужно, иначе может
             return new ResponseEntity("redundant param: id MUST be null", HttpStatus.NOT_ACCEPTABLE);
         }
 
         // если передали пустое значение title
-        if (category.getTitle() == null || category.getTitle().trim().length() == 0) {
+        if (priority.getTitle() == null || priority.getTitle().trim().length() == 0) {
             return new ResponseEntity("missed param: title", HttpStatus.NOT_ACCEPTABLE);
         }
 
-        return ResponseEntity.ok(priorityService.add(category));
+        return ResponseEntity.ok(priorityService.add(priority));
     }
 
     @PutMapping("/update")
-    public ResponseEntity update(@RequestBody Priority category) {
+    public ResponseEntity update(@RequestBody Priority priority) {
 
         // проверка на обязательные параметры
-        if (category.getId() == null || category.getId() == 0) {
+        if (priority.getId() == null || priority.getId() == 0) {
             // id создаётся автоматически в БД (autoincrement), поэтому его передавать не нужно, иначе может
             return new ResponseEntity("redundant param: id", HttpStatus.NOT_ACCEPTABLE);
         }
 
         // если передали пустое значение title
-        if (category.getTitle() == null || category.getTitle().trim().length() == 0) {
+        if (priority.getTitle() == null || priority.getTitle().trim().length() == 0) {
             return new ResponseEntity("missed param: title", HttpStatus.NOT_ACCEPTABLE);
         }
 
         // save работает как на добавление, так и на обновление
-        priorityService.update(category);
+        priorityService.update(priority);
 
         return ResponseEntity.ok(HttpStatus.OK);
     }
