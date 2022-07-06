@@ -1,47 +1,36 @@
-package ru.grobikon.backend.todo.service;
+package ru.grobikon.backend.todo.service
 
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-import ru.grobikon.backend.todo.entity.Category;
-import ru.grobikon.backend.todo.repo.CategoryRepository;
-
-import java.util.List;
+import org.springframework.stereotype.Service
+import org.springframework.transaction.annotation.Transactional
+import ru.grobikon.backend.todo.entity.Category
+import ru.grobikon.backend.todo.repo.CategoryRepository
 
 // Такой подход полезен для будующих доработок и правильной архитектуры (особенно, если работает с транзакциями)
-@Service
-
-//все методы класса должны выполняться без ошибки, чтобы транзакция завершилась
+@Service //все методы класса должны выполняться без ошибки, чтобы транзакция завершилась
 //если в методе возникает исключение - все выполненные операции из данного метода откатятся (Rollback)
 @Transactional
-public class CategoryService {
-
-    private final CategoryRepository categoryRepository;
-
-    public CategoryService(CategoryRepository categoryRepository) {
-        this.categoryRepository = categoryRepository;
+class CategoryService(private val categoryRepository: CategoryRepository) {
+    fun findById(id: Long): Category {
+        return categoryRepository.findById(id).get() //т.к. возвращается Optional - можно получить объект методом get()
     }
 
-    public Category findById(Long id) {
-        return categoryRepository.findById(id).get(); //т.к. возвращается Optional - можно получить объект методом get()
+    fun findAll(email: String): List<Category> {
+        return categoryRepository.findByUserEmailOrderByTitleAsc(email)
     }
 
-    public List<Category> findAll(String email) {
-        return categoryRepository.findByUserEmailOrderByTitleAsc(email);
+    fun add(category: Category): Category {
+        return categoryRepository.save(category) //обновляем или создаём новый объект, если его не было
     }
 
-    public Category add(Category category) {
-        return categoryRepository.save(category); //обновляем или создаём новый объект, если его не было
+    fun update(category: Category): Category {
+        return categoryRepository.save(category) //обновляем или создаём новый объект, если его не было
     }
 
-    public Category update(Category category) {
-        return categoryRepository.save(category); //обновляем или создаём новый объект, если его не было
+    fun deleteById(id: Long) {
+        categoryRepository.deleteById(id)
     }
 
-    public void deleteById(Long id) {
-        categoryRepository.deleteById(id);
-    }
-
-    public List<Category> findByTitle(String title, String email) {
-        return categoryRepository.findByTitle(title, email);
+    fun findByTitle(title: String?, email: String): List<Category> {
+        return categoryRepository.findByTitle(title, email)
     }
 }
