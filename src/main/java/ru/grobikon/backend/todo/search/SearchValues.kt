@@ -1,16 +1,11 @@
-package ru.grobikon.backend.todo.search;
-
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
-
-@NoArgsConstructor
-@AllArgsConstructor
-@Data
+package ru.grobikon.backend.todo.search
 
 //возможные значения, по которым можно искать категории
-public class CategorySearchValues {
+//email такое же название должно быть у объекта на frontend
+//title для фильтрации значений конкретного пользователя
+data class CategorySearchValues(val email: String, val title: String?)
 
-    private String title; //такое же название должно быть у объекта на frontend
-    private String email; //для фильтрации значений конкретного пользователя
-}
+//возможные значения, по которым можно искать категории
+//такое же название должно быть у объекта на frontend
+//для фильтрации значений конкретного пользователя
+data class PrioritySearchValues(val title: String, val email: String?)
