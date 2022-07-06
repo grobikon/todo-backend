@@ -1,13 +1,11 @@
-package ru.grobikon.backend.todo;
+package ru.grobikon.backend.todo
 
-import org.springframework.boot.SpringApplication;
-import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.boot.autoconfigure.SpringBootApplication
+import org.springframework.boot.runApplication
 
 @SpringBootApplication
-public class TodoBackendApplication {
+class TodoBackendApplication
 
-    public static void main(String[] args) {
-        SpringApplication.run(TodoBackendApplication.class, args);
-    }
-
+fun main(args: Array<String>) {
+    runApplication<TodoBackendApplication>(*args)
 }
