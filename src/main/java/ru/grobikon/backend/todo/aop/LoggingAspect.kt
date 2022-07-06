@@ -1,38 +1,37 @@
-package ru.grobikon.backend.todo.aop;
+package ru.grobikon.backend.todo.aop
 
-import lombok.extern.slf4j.Slf4j;
-import org.aspectj.lang.ProceedingJoinPoint;
-import org.aspectj.lang.annotation.Around;
-import org.aspectj.lang.annotation.Aspect;
-import org.aspectj.lang.reflect.MethodSignature;
-import org.springframework.stereotype.Component;
-import org.springframework.util.StopWatch;
+import org.apache.logging.log4j.LogManager
+import org.apache.logging.log4j.Logger
+import org.aspectj.lang.ProceedingJoinPoint
+import org.aspectj.lang.annotation.Around
+import org.aspectj.lang.annotation.Aspect
+import org.aspectj.lang.reflect.MethodSignature
+import org.springframework.stereotype.Component
+import org.springframework.util.StopWatch
 
 @Aspect
 @Component
-@Slf4j
-public class LoggingAspect {
+class LoggingAspect {
+    companion object{
+        val log: Logger = LogManager.getLogger(LoggingAspect::class.java.name)
+    }
 
     //аспект будет выполняться для всех методов из пакета контроллеров
     @Around("execution(* ru.grobikon.backend.todo.controller..*(..)))")
-    public Object profileControllerMethods(ProceedingJoinPoint proceedingJoinPoint) throws Throwable{
-        MethodSignature methodSignature = (MethodSignature) proceedingJoinPoint.getSignature();
+    fun profileControllerMethods(proceedingJoinPoint: ProceedingJoinPoint): Any {
+        val methodSignature = proceedingJoinPoint.signature as MethodSignature
 
         // получаем информацию о том, какой класс и метод выполняется
-        String className = methodSignature.getDeclaringType().getSimpleName();
-        String methodName = methodSignature.getName();
-
-        log.info("-------- Executing: {}. {} --------",className, methodName);
-
-        StopWatch countdown = new StopWatch();
+        val className = methodSignature.declaringType.simpleName
+        val methodName = methodSignature.name
+        log.info("-------- Executing: {}. {} --------", className, methodName)
+        val countdown = StopWatch()
 
         // засекаем время
-        countdown.start();
-        Object result = proceedingJoinPoint.proceed();
-        countdown.stop();
-
-        log.info("-------- Executing time of {}. {} :: {} ms --------",className, methodName, countdown.getTotalTimeMillis());
-
-        return result;
+        countdown.start()
+        val result = proceedingJoinPoint.proceed()
+        countdown.stop()
+        log.info("-------- Executing time of {}. {} :: {} ms --------", className, methodName, countdown.totalTimeMillis)
+        return result
     }
 }
