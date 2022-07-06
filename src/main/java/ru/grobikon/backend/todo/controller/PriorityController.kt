@@ -1,114 +1,97 @@
-package ru.grobikon.backend.todo.controller;
+package ru.grobikon.backend.todo.controller
 
-import org.springframework.dao.EmptyResultDataAccessException;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
-import ru.grobikon.backend.todo.entity.Priority;
-import ru.grobikon.backend.todo.search.PrioritySearchValues;
-import ru.grobikon.backend.todo.service.PriorityService;
-
-import java.util.List;
-import java.util.NoSuchElementException;
+import org.springframework.dao.EmptyResultDataAccessException
+import org.springframework.http.HttpStatus
+import org.springframework.http.ResponseEntity
+import org.springframework.web.bind.annotation.*
+import ru.grobikon.backend.todo.entity.Priority
+import ru.grobikon.backend.todo.search.PrioritySearchValues
+import ru.grobikon.backend.todo.service.PriorityService
 
 // controller - это спец. бин, который обрабатывает веб запросы
 @RestController
 @RequestMapping("/priority")
-public class PriorityController {
-
-    private final PriorityService priorityService;
-
-    public PriorityController(PriorityService priorityService) {
-        this.priorityService = priorityService;
-    }
-
+class PriorityController(private val priorityService: PriorityService) {
     @PostMapping("/all")
-    public List<Priority> findAll(@RequestBody String email) {
-        return priorityService.findAll(email);
+    fun findAll(@RequestBody email: String?): List<Priority> {
+        return priorityService.findAll(email!!)
     }
 
     @PostMapping("/add")
-    public ResponseEntity<Priority> add(@RequestBody Priority priority) {
+    fun add(@RequestBody priority: Priority): ResponseEntity<Any> {
 
         // проверка на обязательные параметры
-        if (priority.getId() != null && priority.getId() != 0) {
+        if (priority.id != null && priority.id != 0L) {
             // id создаётся автоматически в БД (autoincrement), поэтому его передавать не нужно, иначе может
-            return new ResponseEntity("redundant param: id MUST be null", HttpStatus.NOT_ACCEPTABLE);
+            return ResponseEntity<Any>("redundant param: id MUST be null", HttpStatus.NOT_ACCEPTABLE)
         }
 
         // если передали пустое значение title
-        if (priority.getTitle() == null || priority.getTitle().trim().length() == 0) {
-            return new ResponseEntity("missed param: title", HttpStatus.NOT_ACCEPTABLE);
+        if (priority.title == null || priority.title.trim().isEmpty()) {
+            return ResponseEntity<Any>("missed param: title", HttpStatus.NOT_ACCEPTABLE)
         }
 
-        return ResponseEntity.ok(priorityService.add(priority));
+        return ResponseEntity.ok(priorityService.add(priority))
     }
 
     @PutMapping("/update")
-    public ResponseEntity update(@RequestBody Priority priority) {
+    fun update(@RequestBody priority: Priority): ResponseEntity<Any> {
 
         // проверка на обязательные параметры
-        if (priority.getId() == null || priority.getId() == 0) {
+        if (priority.id == null || priority.id == 0L) {
             // id создаётся автоматически в БД (autoincrement), поэтому его передавать не нужно, иначе может
-            return new ResponseEntity("redundant param: id", HttpStatus.NOT_ACCEPTABLE);
+            return ResponseEntity<Any>("redundant param: id", HttpStatus.NOT_ACCEPTABLE)
         }
 
         // если передали пустое значение title
-        if (priority.getTitle() == null || priority.getTitle().trim().length() == 0) {
-            return new ResponseEntity("missed param: title", HttpStatus.NOT_ACCEPTABLE);
+        if (priority.title == null || priority.title.trim().isEmpty()) {
+            return ResponseEntity<Any>("missed param: title", HttpStatus.NOT_ACCEPTABLE)
         }
 
         // save работает как на добавление, так и на обновление
-        priorityService.update(priority);
-
-        return ResponseEntity.ok(HttpStatus.OK);
+        priorityService.update(priority)
+        return ResponseEntity.ok(HttpStatus.OK)
     }
 
     //для удаления используем тип запроса DELETE и передаем ID для удаления
     //можно также использовать метод POST и передавать ID  в теле запроса
     @DeleteMapping("/delete/{id}")
-    public ResponseEntity delete(@PathVariable("id") Long id) {
+    fun delete(@PathVariable("id") id: Long): ResponseEntity<Any> {
 
         //можно обойтись и без try-catch, тогда будет возвращяться полная ошибка (stacktrace)
         //здесь показан пример, как можно обработать исключение и отправлять свой текст/статус
-        try{
-            priorityService.deleteById(id);
-        }catch (EmptyResultDataAccessException e) {
-            e.printStackTrace();
-            return new ResponseEntity("id=" + id + " not found", HttpStatus.NOT_ACCEPTABLE);
+        try {
+            priorityService.deleteById(id)
+        } catch (e: EmptyResultDataAccessException) {
+            e.printStackTrace()
+            return ResponseEntity<Any>("id=$id not found", HttpStatus.NOT_ACCEPTABLE)
         }
-
-        return ResponseEntity.ok(HttpStatus.OK); // просто отправляем статус 200 без объектов (операция прошла успешно)
+        return ResponseEntity.ok(HttpStatus.OK) // просто отправляем статус 200 без объектов (операция прошла успешно)
     }
 
     //поиск по любым параметрам PrioritySearchValues
     @PostMapping("/search")
-    public ResponseEntity<List<Priority>> search(@RequestBody PrioritySearchValues categorySearchValues) {
+    fun search(@RequestBody categorySearchValues: PrioritySearchValues): ResponseEntity<Any> {
 
         // проверка на обязательные параметры
-        if (categorySearchValues.getEmail() == null || categorySearchValues.getEmail().trim().length() == 0) {
-            return new ResponseEntity("redundant param: email", HttpStatus.NOT_ACCEPTABLE);
+        if (categorySearchValues.email == null || categorySearchValues.email.trim().isEmpty()) {
+            return ResponseEntity<Any>("redundant param: email", HttpStatus.NOT_ACCEPTABLE)
         }
 
         //поиск категорий пользователя по назначению
-        List<Priority> list = priorityService.findByTitle(categorySearchValues.getTitle(), categorySearchValues.getEmail());
-
-        return ResponseEntity.ok(list); // просто отправляем статус 200 без объектов (операция прошла успешно)
+        val list = priorityService.findByTitle(categorySearchValues.title, categorySearchValues.email)
+        return ResponseEntity.ok(list) // просто отправляем статус 200 без объектов (операция прошла успешно)
     }
 
     //параметр id передаются не в BODY запроса, а в самом URL
     @PostMapping("/id")
-    public ResponseEntity<Priority> findById(@RequestBody Long id) {
-
-        Priority category;
-
-        try{
-            category = priorityService.findById(id);
-        }catch(NoSuchElementException e) { //если объект не будет найден
-            e.printStackTrace();
-            return new ResponseEntity("id=" + id + " not found", HttpStatus.NOT_ACCEPTABLE);
+    fun findById(@RequestBody id: Long): ResponseEntity<Any> {
+        val category: Priority = try {
+            priorityService.findById(id)
+        } catch (e: NoSuchElementException) { //если объект не будет найден
+            e.printStackTrace()
+            return ResponseEntity<Any>("id=$id not found", HttpStatus.NOT_ACCEPTABLE)
         }
-
-        return ResponseEntity.ok(category); // просто отправляем статус 200 без объектов (операция прошла успешно)
+        return ResponseEntity.ok(category) // просто отправляем статус 200 без объектов (операция прошла успешно)
     }
 }
