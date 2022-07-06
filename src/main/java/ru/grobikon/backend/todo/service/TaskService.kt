@@ -1,56 +1,52 @@
-package ru.grobikon.backend.todo.service;
+package ru.grobikon.backend.todo.service
 
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-import ru.grobikon.backend.todo.entity.Stat;
-import ru.grobikon.backend.todo.entity.Task;
-import ru.grobikon.backend.todo.repo.StatRepository;
-import ru.grobikon.backend.todo.repo.TaskRepository;
-
-import java.util.Date;
-import java.util.List;
+import org.springframework.data.domain.Page
+import ru.grobikon.backend.todo.repo.TaskRepository
+import org.springframework.data.domain.PageRequest
+import org.springframework.stereotype.Service
+import org.springframework.transaction.annotation.Transactional
+import ru.grobikon.backend.todo.entity.Task
+import java.util.*
 
 // Всегда нужно создавать отдельный класс Service для доступа к данным, даже если кажется,
 // что мало методов или все можно реализовать сразу в контроллере
 // Такой подход полезен для будущих доработок и правильной архитектуры (особенно, если работает с транзакциями)
-@Service
-
-//все методы класса должны выполняться без ошибки, чтобы транзакция завершилась
+@Service //все методы класса должны выполняться без ошибки, чтобы транзакция завершилась
 //если в методе возникает исключение - все выполненные операции из данного метода откатятся (Rollback)
 @Transactional
-public class TaskService {
-
-    private final TaskRepository repository; // сервис имеет право обращаться к репозиторию (БД)
-
-    public TaskService(TaskRepository repository) {
-        this.repository = repository;
+class TaskService(  // сервис имеет право обращаться к репозиторию (БД)
+    private val repository: TaskRepository
+) {
+    fun findAll(email: String): List<Task> {
+        return repository.findByUserEmailOrderByTitleAsc(email)
     }
 
-
-    public List<Task> findAll(String email) {
-        return repository.findByUserEmailOrderByTitleAsc(email);
+    fun add(task: Task): Task {
+        return repository.save(task) // метод save обновляет или создает новый объект, если его не было
     }
 
-    public Task add(Task task) {
-        return repository.save(task); // метод save обновляет или создает новый объект, если его не было
+    fun update(task: Task): Task {
+        return repository.save(task) // метод save обновляет или создает новый объект, если его не было
     }
 
-    public Task update(Task task) {
-        return repository.save(task); // метод save обновляет или создает новый объект, если его не было
+    fun deleteById(id: Long) {
+        repository.deleteById(id)
     }
 
-    public void deleteById(Long id) {
-        repository.deleteById(id);
+    fun findByParams(
+        text: String?,
+        completed: Boolean?,
+        priorityId: Long?,
+        categoryId: Long?,
+        email: String,
+        dateFrom: Date?,
+        dateTo: Date?,
+        paging: PageRequest
+    ): Page<Task> {
+        return repository.findByParams(text, completed, priorityId, categoryId, email, dateFrom, dateTo, paging)
     }
 
-
-    public Page<Task> findByParams(String text, Boolean completed, Long priorityId, Long categoryId, String email, Date dateFrom, Date dateTo, PageRequest paging) {
-        return repository.findByParams(text, completed, priorityId, categoryId, email, dateFrom, dateTo, paging);
-    }
-
-    public Task findById(Long id) {
-        return repository.findById(id).get(); // т.к. возвращается Optional - можно получить объект методом get()
+    fun findById(id: Long): Task {
+        return repository.findById(id).get() // т.к. возвращается Optional - можно получить объект методом get()
     }
 }
